@@ -303,7 +303,7 @@ function salvarPDF() {
 
   // Oculta elementos da página que não vão no PDF
   const ocultar = document.querySelectorAll(
-    'header, .hero, footer, .aviso, #toast, .glossario-section'
+'header, .hero, footer, .aviso, #toast, .glossario-section, #banner-atualizacao'
   );
   ocultar.forEach(el => el.style.display = 'none');
 
@@ -348,7 +348,34 @@ function salvarPDF() {
 //  IMPRIMIR
 // ══════════════════════════════════════════════════════════════
 function imprimir() {
-  window.print();
+  const s = window._sim || {};
+  const regime = s.regime === 'presumido' ? 'Lucro Presumido' : 'Simples Nacional';
+  const dataHoje = new Date().toLocaleDateString('pt-BR');
+
+  // Preenche dados do cabeçalho
+  document.getElementById('pdf-data').textContent   = 'Gerado em: ' + dataHoje;
+  document.getElementById('pdf-regime').textContent = 'Regime: ' + regime;
+
+  // Mostra o cabeçalho
+  const header = document.getElementById('pdf-header');
+  header.style.display = 'block';
+
+  // Oculta elementos que não devem aparecer na impressão
+  const ocultar = document.querySelectorAll(
+    'header, .hero, footer, .aviso, #toast, .glossario-section, #banner-atualizacao'
+  );
+  ocultar.forEach(el => el.style.display = 'none');
+
+  // Aguarda renderizar e abre o diálogo de impressão
+  setTimeout(() => {
+    window.print();
+
+    // Restaura após fechar o diálogo
+    setTimeout(() => {
+      header.style.display = 'none';
+      ocultar.forEach(el => el.style.display = '');
+    }, 1000);
+  }, 300);
 }
 
 // ══════════════════════════════════════════════════════════════

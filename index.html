@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <!-- ═══════════════ HEADER ═══════════════ -->
@@ -36,6 +37,33 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       <span class="btn-tooltip">Imprimir</span>
     </button>
+  </div>
+</div>
+</div>
+  </div>
+</div>
+
+<!-- BANNER DE TABELAS DESATUALIZADAS -->
+<div id="banner-atualizacao" style="display:none; background:#7a3e00; color:#fff8ec; padding:12px 24px; align-items:center; justify-content:center; gap:10px; font-family:'Sora',sans-serif; font-size:13px; font-weight:500;">
+  <span>⚠️</span>
+  <span class="banner-ano"></span>
+  <a href="https://www.gov.br/receitafederal" target="_blank" style="color:#ffd97a; font-weight:700; margin-left:4px;">Verificar tabelas →</a>
+</div>
+
+<!-- CABEÇALHO DO PDF — oculto na tela, visível só no PDF -->
+<div id="pdf-header" style="display:none; padding: 18px 24px 14px; background: #123f52; border-radius: 10px; margin-bottom: 20px;">
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <img src="assets/exito-logo-branco.png" style="height:48px; width:auto; mix-blend-mode:screen;">
+      <div>
+        <div style="font-family:'Sora',sans-serif; font-size:15px; font-weight:700; color:#ffffff; letter-spacing:-.2px;">Simulador de Custo de Mão de Obra CLT</div>
+        <div style="font-family:'Sora',sans-serif; font-size:11px; color:rgba(255,255,255,.55); margin-top:2px;">Êxito Contábil · Uso exclusivo para estimativa</div>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-family:'Sora',sans-serif; font-size:11px; color:rgba(255,255,255,.55);" id="pdf-data"></div>
+      <div style="font-family:'Sora',sans-serif; font-size:11px; color:rgba(255,255,255,.55);" id="pdf-regime"></div>
+    </div>
   </div>
 </div>
 

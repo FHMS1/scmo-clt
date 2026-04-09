@@ -49,6 +49,7 @@ const CONFIG = {
 
   // Divisor horas mensais
   horas_mes:     220,
+  ano_tabelas: 2026,   // ← atualizar aqui todo início de ano
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -287,31 +288,67 @@ function calcular() {
 //  SALVAR PDF
 // ══════════════════════════════════════════════════════════════
 function salvarPDF() {
-  // Atualiza data no header de impressão
-  const dateEl = document.getElementById('print-date');
-  if (dateEl) {
-    const s = window._sim || {};
-    const reg = s.regime === 'presumido' ? 'Lucro Presumido' : 'Simples Nacional';
-    dateEl.innerHTML = `Gerado em: ${new Date().toLocaleDateString('pt-BR')}<br>Regime: ${reg}`;
-  }
-  // Mostra print header e aviso durante impressão
-  document.querySelectorAll('.print-header,.print-aviso').forEach(el => el.style.display = '');
-  // Abre diálogo de impressão configurado para PDF
-  const original = document.title;
-  document.title = 'Simulação CLT — Êxito Contábil — ' + new Date().toLocaleDateString('pt-BR');
-  window.print();
-  document.title = original;
-  // Restaura após impressão
-  setTimeout(() => {
-    document.querySelectorAll('.print-header,.print-aviso').forEach(el => el.style.display = 'none');
-  }, 1000);
+  const s = window._sim || {};
+  const regime = s.regime === 'presumido' ? 'Lucro Presumido' : 'Simples Nacional';
+  const dataHoje = new Date().toLocaleDateString('pt-BR');
+  const nomeArquivo = `Simulacao-CLT_${regime.replace(' ', '-')}_${dataHoje.replace(/\//g, '-')}.pdf`;
+
+  // Preenche dados do cabeçalho
+  document.getElementById('pdf-data').textContent   = 'Gerado em: ' + dataHoje;
+  document.getElementById('pdf-regime').textContent = 'Regime: ' + regime;
+
+  // Mostra o cabeçalho
+  const header = document.getElementById('pdf-header');
+  header.style.display = 'block';
+
+  // Oculta elementos da página que não vão no PDF
+  const ocultar = document.querySelectorAll(
+    'header, .hero, footer, .aviso, #toast, .glossario-section'
+  );
+  ocultar.forEach(el => el.style.display = 'none');
+
+  // Monta wrapper com cabeçalho + coluna de resultados
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'padding:16px; background:#f7f9fb;';
+
+  const headerClone = header.cloneNode(true);
+  const resultados  = document.querySelector('main > div:last-child').cloneNode(true);
+
+  headerClone.style.display = 'block';
+  wrapper.appendChild(headerClone);
+  wrapper.appendChild(resultados);
+
+  const opcoes = {
+    margin:       [6, 6, 6, 6],
+    filename:     nomeArquivo,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['avoid-all', 'css'] }
+  };
+
+  html2pdf()
+    .set(opcoes)
+    .from(wrapper)
+    .save()
+    .then(() => {
+      header.style.display = 'none';
+      ocultar.forEach(el => el.style.display = '');
+      showToast('✓ PDF gerado com sucesso!');
+    })
+    .catch(error => {
+      console.error(error);
+      header.style.display = 'none';
+      ocultar.forEach(el => el.style.display = '');
+      showToast('Erro ao gerar PDF. Veja o console.');
+    });
 }
 
 // ══════════════════════════════════════════════════════════════
 //  IMPRIMIR
 // ══════════════════════════════════════════════════════════════
 function imprimir() {
-  salvarPDF(); // mesma função — o navegador permite escolher impressora ou PDF
+  window.print();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -341,10 +378,26 @@ function toggleGlos(trigger) {
   // Toggle current
   if (!isOpen) card.classList.add('open');
 }
+// ══════════════════════════════════════════════════════════════
+//  VERIFICAÇÃO DE TABELAS ATUALIZADAS
+// ══════════════════════════════════════════════════════════════
+function verificarAtualizacao() {
+  const anoAtual   = new Date().getFullYear();
+  const anoTabelas = CONFIG.ano_tabelas;
 
+  if (anoAtual > anoTabelas) {
+    const banner = document.getElementById('banner-atualizacao');
+    if (banner) {
+      banner.style.display = 'flex';
+      banner.querySelector('.banner-ano').textContent =
+        `As tabelas de INSS e IRRF são de ${anoTabelas}. Verifique se há atualização para ${anoAtual}.`;
+    }
+  }
+}
 // init
 onRegime();
 calcular();
+verificarAtualizacao();
 // Set print date on load
 const pdEl = document.getElementById('print-date');
 if (pdEl) pdEl.textContent = 'Gerado em: ' + new Date().toLocaleDateString('pt-BR');

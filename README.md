@@ -14,8 +14,11 @@ Ferramenta web para simulação do custo real mensal de um empregado CLT no Bras
 - **Separação entre custo mensal real** (desembolso efetivo) **e provisões** (13º, férias, 1/3)
 - **Benefícios:** vale-transporte com desconto legal de 6% e vale-alimentação
 - **Adicional de periculosidade** com percentual editável (padrão 30%)
-- **Glossário interativo** com base legal citada, expansível por clique
-- **Impressão / PDF** formatado em página única, otimizado para A4
+- **Gratificação e comissão** com integração à remuneração (INSS, IRRF, FGTS, encargos e provisões)
+- **RAT × FAP separados:** grau de risco por atividade (CNAE) e FAP homologado informado à parte
+- **Glossário em painel mestre-detalhe** (lista de termos + detalhe, com base legal citada)
+- **Tema claro/escuro** com detecção automática do sistema e preferência salva no navegador
+- **Impressão / PDF** compacto, otimizado para A4, sempre no tema claro (mesmo com o site em modo escuro)
 - **Arquivo único** — funciona offline, sem dependências externas de runtime
 
 ---
@@ -55,9 +58,10 @@ Ferramenta web para simulação do custo real mensal de um empregado CLT no Bras
 
 ### Remuneração
 ```
-remuneraçãoBruta = salárioBase + adicionalPericulosidade
+remuneraçãoBruta = salárioBase + adicionalPericulosidade + gratificação + comissão
 adicionalPericulosidade = salárioBase × (percentual / 100)
 ```
+Gratificação e comissão são informadas em valor mensal (R$) e integram a remuneração para todos os efeitos legais (CLT, Art. 457, §1º) — entram na base de INSS, IRRF, FGTS, encargos patronais e provisões.
 
 ### INSS do Empregado — Tabela Progressiva 2025
 | Faixa | Até | Alíquota |
@@ -93,10 +97,37 @@ FGTS = remuneraçãoBruta × 8%
 ### Encargos Patronais — Lucro Presumido
 ```
 INSS Patronal   = remuneraçãoBruta × 20%
-RAT/FAP         = remuneraçãoBruta × alíquotaRAT (1%, 2% ou 3%)
+RAT             = remuneraçãoBruta × grauRisco (1%, 2% ou 3%, conforme CNAE/atividade) × FAP (0,5 a 2,0)
 Terceiros (S)   = remuneraçãoBruta × 5,8%
 ```
 > No Simples Nacional esses encargos estão incluídos na DAS e **não** são somados ao custo.
+> O FAP é sempre informado manualmente pelo usuário a partir do extrato oficial homologado no CNPJ (0,5 a 2,0) — é calculado anualmente pelo INSS por empresa, não podendo ser deduzido do CNAE.
+
+### Grau de Risco por Atividade (CNAE)
+
+O grau de risco (1/2/3 → 1%/2%/3%) pode ser selecionado de duas formas:
+
+1. **Lista curada** — 14 CNAEs comuns, verificados individualmente (código + descrição + grau, cruzando o percentual RAT com a classificação leve/médio/grave, não uma tabela raspada de terceiros). Cobre serviços profissionais, comércio, hotelaria/alimentação e atividades de maior risco (construção, transporte, oficina).
+2. **"Outra atividade"** — libera um seletor manual (1%/2%/3%), para quando o CNAE do cliente não está na lista curada. Sempre confirmar o grau oficial no Anexo V do Decreto nº 3.048/1999.
+
+> ⚠️ O Anexo V oficial tem ~1.300 subclasses de CNAE (Decreto nº 3.048/1999, redação do Decreto nº 6.957/2009; detalhado na IN RFB nº 971/2009). A lista curada aqui é um subconjunto para agilizar os casos mais comuns da carteira de clientes — não substitui a consulta ao Anexo V para atividades fora dela.
+
+| CNAE | Atividade | Grau |
+|---|---|---|
+| 6920-6/01 | Serviços de contabilidade | 1 (leve) |
+| 6201-5/01 | Desenvolvimento de programas sob encomenda (TI) | 1 (leve) |
+| 8630-5/03 | Atividade médica ambulatorial — consultas | 1 (leve) |
+| 8599-6/04 | Treinamento profissional e gerencial | 1 (leve) |
+| 4781-4/00 | Comércio varejista de vestuário e acessórios | 2 (médio) |
+| 6810-2/02 | Aluguel de imóveis próprios (imobiliária) | 2 (médio) |
+| 8211-3/00 | Escritório e apoio administrativo | 2 (médio) |
+| 5510-8/01 | Hotéis | 2 (médio) |
+| 9602-5/01 | Cabeleireiros, manicure e pedicure | 2 (médio) |
+| 5611-2/01 | Restaurantes e similares | 2 (médio) |
+| 4120-4/00 | Construção de edifícios | 3 (grave) |
+| 4711-3/02 | Comércio varejista de mercadorias em geral (supermercado) | 3 (grave) |
+| 4930-2/02 | Transporte rodoviário de carga | 3 (grave) |
+| 4520-0/01 | Manutenção e reparação de veículos automotores | 3 (grave) |
 
 ### Vale-Transporte
 ```
@@ -151,7 +182,17 @@ totalRecebido  = líquidoFolha + valorMensalVT + valorMensalVA
 | Frameworks | Nenhum |
 | Dependências runtime | Nenhuma |
 | Compatibilidade | Chrome, Firefox, Edge, Safari (modernos) |
-| Responsividade | Grid 2 colunas (desktop) → 1 coluna (≤ 940px) |
+| Responsividade | Grid 2 colunas (desktop) → 1 coluna (≤ 940px) → 1 coluna compacta (≤ 480px) |
+| Tema | Claro/escuro via `data-theme` + custom properties; resolvido antes do primeiro paint (sem flash) |
+
+### Design tokens
+
+Todas as cores são `custom properties` em `css/styles.css`, com dois papéis distintos:
+
+- **Chrome** (`--chrome`, `--chrome-dark`) — fundo do header, hero, footer e bandas escuras. Fixo nos dois temas (são superfícies "de marca", não superfícies de página).
+- **Accent/neutros** (`--teal`, `--gray-*`, `--green`, `--amber`, `--red`, `--purple`, cada um com uma variante `-light`) — adaptam entre claro e escuro via `:root[data-theme="dark"]`.
+
+O PDF (`salvarPDF()`) e a impressão nativa (`@media print`) reforçam as variáveis do tema claro explicitamente, porque custom properties herdam do `<html data-theme="dark">` — sem isso, gerar um PDF com o site em modo escuro sairia com fundo escuro.
 
 ---
 
@@ -199,28 +240,36 @@ const CONFIG = {
 | `calcIRRF(base)` | IRRF 2026 com isenção — retorna `{ impostoFinal, impostoBruto, reducao, categoria }` |
 | `onRegime()` | Alterna entre Simples Nacional e Lucro Presumido |
 | `toggleSub(chkId, divId, rowId)` | Abre/fecha sub-campos dos toggles |
-| `toggleGlos(trigger)` | Abre/fecha item do glossário (accordion) |
-| `salvarPDF()` | Aciona `window.print()` com layout otimizado para A4 |
+| `renderGlossario()` / `selectGlos(id)` | Monta a lista do glossário a partir do array `GLOSSARIO` e troca o termo exibido no painel de detalhe |
+| `toggleTheme()` | Alterna entre tema claro/escuro e salva a preferência no `localStorage` |
+| `salvarPDF()` | Gera o PDF via `html2pdf.js` (html2canvas + jsPDF), em modo compacto (`.pdf-mode`), sempre no tema claro |
+| `imprimir()` | Aciona `window.print()` nativo do navegador, com layout otimizado via `@media print` |
 | `limpar()` | Reseta todos os campos ao estado inicial |
 
 ---
 
 ## Impressão / PDF
 
-Ao clicar em **Salvar PDF** ou **Imprimir**, o navegador abre o diálogo nativo. Para salvar como PDF, selecione "Salvar como PDF" como destino da impressão.
+Existem dois caminhos de exportação, com motores diferentes:
 
-**O que aparece no PDF:**
+- **Salvar PDF** (`salvarPDF()`) — renderiza a coluna de resultados via `html2pdf.js` (html2canvas + jsPDF) e baixa o arquivo diretamente, sem diálogo do navegador. Usa a classe `.pdf-mode` (`css/styles.css`) para compactar espaçamentos e fontes — esse CSS não depende de `@media print`, porque o html2canvas captura o DOM como ele está na tela, não a versão de impressão.
+- **Imprimir** (`imprimir()`) — abre o diálogo nativo de impressão do navegador (`window.print()`), que usa as regras de `@media print` do `styles.css` (visual ligeiramente diferente do PDF gerado por `salvarPDF()`).
+
+**O que aparece nos dois:**
 - Header limpo com nome da ferramenta, empresa e data de geração
 - KPIs em 4 colunas
 - Cards A, B e C (resultados completos)
-- Aviso legal
-- Glossário (opcional — visível se aberto)
 
-**O que é ocultado no PDF:**
-- Header sticky do site
-- Hero e botões de ação
+**O que é ocultado nos dois:**
+- Header sticky do site, hero e botões de ação
 - Coluna de inputs (Blocos 1, 2 e 3)
-- Footer
+- Footer e aviso legal
+
+**Diferença entre os dois:** o glossário aparece na impressão nativa (`imprimir()`, via `@media print`), mas **não** no PDF gerado por `salvarPDF()` (sempre oculto). Se quiserem consistência entre os dois formatos, é só ajustar o seletor `ocultar` em `salvarPDF()`.
+
+**Paginação:** o modo `.pdf-mode` usa `page-break-inside: avoid` nos cards para evitar que um card seja cortado no meio entre páginas — a quebra sempre cai entre cards, nunca no meio de uma linha. Dependendo de quantos campos opcionais estiverem preenchidos (periculosidade, VT, VA, gratificação, comissão, regime Lucro Presumido), a simulação sai em 1 ou 2 páginas A4.
+
+**Logo local:** o logo é embutido como base64 diretamente no HTML (não referenciado como arquivo externo). Isso é necessário porque `html2canvas` marca o canvas como "tainted" (e o PDF falha silenciosamente) quando a página é aberta localmente via `file://` e a imagem vem de um arquivo externo — o navegador trata origens `file://` como opacas por padrão.
 
 ---
 
@@ -232,6 +281,7 @@ Para atualizar as tabelas ao início de cada ano, edite **apenas o objeto `CONFI
 2. **IRRF** → atualizar `irrf_faixas` conforme tabela Receita Federal
 3. **Isenção IRRF** → atualizar `irrf_isencao_teto`, `irrf_reducao_teto`, `irrf_desconto_max`, `irrf_reducao_constante` e `irrf_reducao_fator`
 4. **Encargos Terceiros** → verificar se alíquotas do Sistema S foram alteradas em `terceiros`
+5. **Grau de risco por CNAE** → o Anexo V do Decreto nº 3.048/1999 raramente muda, mas vale conferir a lista curada (`<select id="cnaeAtividade">` no `index.html`) se algum CNAE dos clientes mudar de enquadramento
 
 Também atualizar a tabela visual do IRRF no HTML (Bloco 3 — card da coluna esquerda).
 
@@ -243,6 +293,7 @@ Esta versão **não considera:**
 - IRRF com deduções legais (dependentes, pensão alimentícia, previdência privada)
 - Horas extras e adicional noturno
 - Faltas e DSR (Descanso Semanal Remunerado)
+- DSR sobre comissões (reflexo do descanso semanal sobre a média variável)
 - Insalubridade
 - Rescisão e cálculos de aviso prévio
 - Convenção coletiva

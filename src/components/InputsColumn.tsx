@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import { CNAES, CNAE_OUTRA, ROTULO_GRAU } from '../domain/cnae';
 import { grauDoFormulario, type FormState } from '../domain/formulario';
-import { brl } from '../domain/format';
+import { brl, pct } from '../domain/format';
 import { TABELAS } from '../domain/tabelas2026';
 import type { GrauRisco, ResultadoSimulacao } from '../domain/types';
-import { Card } from './ui';
+import { Card, Icon, type IconName } from './ui';
 
 type Props = {
   form: FormState;
@@ -13,21 +13,20 @@ type Props = {
 };
 
 const GRAUS: GrauRisco[] = [1, 2, 3];
-const pct = (v: number) => `${(v * 100).toString().replace('.', ',')}%`;
 
 function Toggle({
   icon, label, checked, onToggle, children,
-}: { icon: string; label: string; checked: boolean; onToggle: (v: boolean) => void; children: ReactNode }) {
+}: { icon: IconName; label: string; checked: boolean; onToggle: (v: boolean) => void; children: ReactNode }) {
   return (
     <>
       <div className={`toggle-row${checked ? ' on' : ''}`}>
-        <div className="toggle-lbl"><span>{icon}</span> {label}</div>
+        <div className="toggle-lbl"><Icon name={icon} /> {label}</div>
         <label className="tsw">
           <input type="checkbox" checked={checked} onChange={(e) => onToggle(e.target.checked)} aria-label={label} />
           <span className="tsl" />
         </label>
       </div>
-      {checked && <div className="sub-fields" style={{ display: 'block' }}>{children}</div>}
+      {checked && <div className="sub-fields">{children}</div>}
     </>
   );
 }
@@ -56,7 +55,7 @@ function BlocoRegime({ form, onChange, resultado }: Props) {
   const cnae = CNAES.find((c) => c.codigo === form.cnae);
 
   return (
-    <Card icon="🏛️" iconClass="ci-purple" title="Regime Tributário da Empresa" badge="BLOCO 1">
+    <Card icon="landmark" tom="purple" title="Regime tributário" badge="1">
       <div className="regime-pills">
         <label className={`rpill${form.regime === 'simples' ? ' sel-simples' : ''}`}>
           <input type="radio" name="regime" checked={form.regime === 'simples'}
@@ -71,15 +70,15 @@ function BlocoRegime({ form, onChange, resultado }: Props) {
       </div>
 
       {form.regime === 'simples' && (
-        <label className="toggle-lbl" style={{ marginTop: 14, gap: 8, cursor: 'pointer' }}>
+        <label className="check-row">
           <input type="checkbox" checked={form.anexoIV} onChange={(e) => onChange('anexoIV', e.target.checked)} />
           Atividade do Anexo IV (CPP e RAT fora do DAS)
         </label>
       )}
 
       {patronal && (
-        <div style={{ marginTop: 16 }}>
-          <div className="slbl">Encargos Patronais</div>
+        <div style={{ marginTop: 18 }}>
+          <div className="slbl">Encargos patronais</div>
 
           <div className="fg">
             <label htmlFor="cnae">Atividade (CNAE)</label>
@@ -95,8 +94,8 @@ function BlocoRegime({ form, onChange, resultado }: Props) {
             </select>
             <p className="hint">
               {outra
-                ? '⚠️ Selecione o grau de risco manualmente e confirme no Anexo V do Decreto nº 3.048/1999 (ou no CNAE oficial do cliente).'
-                : `📌 CNAE ${cnae?.codigo} · grau de risco ${grau} (${grau}%). Lista curada — fora dela, use "Outra atividade".`}
+                ? 'Selecione o grau de risco manualmente e confirme no Anexo V do Decreto nº 3.048/1999 (ou no CNAE oficial do cliente).'
+                : `CNAE ${cnae?.codigo} · grau de risco ${grau} (${grau}%). Lista curada — fora dela, use "Outra atividade".`}
             </p>
           </div>
 
@@ -107,7 +106,7 @@ function BlocoRegime({ form, onChange, resultado }: Props) {
                 onChange={(e) => onChange('grauManual', Number(e.target.value) as GrauRisco)}>
                 {GRAUS.map((g) => <option key={g} value={g}>{ROTULO_GRAU[g]}</option>)}
               </select>
-              <p className="hint">⚠️ Confirme o grau oficial do CNAE do cliente no Anexo V do Decreto nº 3.048/1999 antes de usar.</p>
+              <p className="hint">Confirme o grau oficial do CNAE do cliente no Anexo V do Decreto nº 3.048/1999 antes de usar.</p>
             </div>
           )}
 
@@ -118,7 +117,7 @@ function BlocoRegime({ form, onChange, resultado }: Props) {
               <input id="fap" type="number" min={0.5} max={2} step={0.0001} value={form.fap}
                 onChange={(e) => onChange('fap', e.target.value)} />
             </div>
-            <p className="hint">⚙️ Multiplica o RAT de 0,5000 a 2,0000 conforme o histórico de acidentes da empresa. Use o valor homologado no CNPJ (extrato FAP no gov.br).</p>
+            <p className="hint">Multiplica o RAT de 0,5000 a 2,0000 conforme o histórico de acidentes da empresa. Use o valor homologado no CNPJ (extrato FAP no gov.br).</p>
           </div>
 
           <div className="enc-box">
@@ -137,11 +136,11 @@ function BlocoRegime({ form, onChange, resultado }: Props) {
 
 function BlocoEmpregado({ form, onChange }: Props) {
   return (
-    <Card icon="⌗" iconClass="ci-teal" title="Dados do Empregado" badge="BLOCO 2">
+    <Card icon="form" title="Dados do empregado" badge="2">
       <CampoMoeda label="Salário base mensal" value={form.salarioBase}
         onChange={(v) => onChange('salarioBase', v)} />
 
-      <Toggle icon="⚠️" label="Adicional de periculosidade" checked={form.chkPeri}
+      <Toggle icon="alert" label="Adicional de periculosidade" checked={form.chkPeri}
         onToggle={(v) => onChange('chkPeri', v)}>
         <div className="fg">
           <label>Percentual</label>
@@ -154,32 +153,32 @@ function BlocoEmpregado({ form, onChange }: Props) {
         </div>
       </Toggle>
 
-      <Toggle icon="🏅" label="Gratificação" checked={form.chkGrat}
+      <Toggle icon="award" label="Gratificação" checked={form.chkGrat}
         onToggle={(v) => onChange('chkGrat', v)}>
         <CampoMoeda label="Valor mensal" value={form.valorGrat}
           onChange={(v) => onChange('valorGrat', v)}
-          hint="📌 Gratificação habitual integra a remuneração (CLT, Art. 457) — entra na base de INSS, IRRF, FGTS e provisões." />
+          hint="Gratificação habitual integra a remuneração (CLT, Art. 457) — entra na base de INSS, IRRF, FGTS e provisões." />
       </Toggle>
 
-      <Toggle icon="📈" label="Comissão" checked={form.chkCom}
+      <Toggle icon="trend" label="Comissão" checked={form.chkCom}
         onToggle={(v) => onChange('chkCom', v)}>
         <CampoMoeda label="Valor mensal" value={form.valorCom}
           onChange={(v) => onChange('valorCom', v)}
-          hint="📌 Comissão integra a remuneração (Lei nº 3.207/1957) — entra na base de INSS, IRRF, FGTS e provisões." />
+          hint="Comissão integra a remuneração (Lei nº 3.207/1957) — entra na base de INSS, IRRF, FGTS e provisões." />
       </Toggle>
 
-      <Toggle icon="🚌" label="Vale-transporte" checked={form.chkVT}
+      <Toggle icon="bus" label="Vale-transporte" checked={form.chkVT}
         onToggle={(v) => onChange('chkVT', v)}>
         <CampoMoeda label="Valor de 1 passagem" value={form.valorPassagem}
           onChange={(v) => onChange('valorPassagem', v)}
-          hint={`📌 Calculado: ${TABELAS.vtPassagens} passagens/dia × ${TABELAS.vtDias} dias úteis`} />
+          hint={`Calculado: ${TABELAS.vtPassagens} passagens/dia × ${TABELAS.vtDias} dias úteis`} />
       </Toggle>
 
-      <Toggle icon="🍽️" label="Vale-alimentação / refeição" checked={form.chkVA}
+      <Toggle icon="utensils" label="Vale-alimentação / refeição" checked={form.chkVA}
         onToggle={(v) => onChange('chkVA', v)}>
         <CampoMoeda label="Valor por dia útil" value={form.valorDiaVA}
           onChange={(v) => onChange('valorDiaVA', v)}
-          hint={`📌 ${TABELAS.vaDias} dias úteis/mês · custo integral da empresa`} />
+          hint={`${TABELAS.vaDias} dias úteis/mês · custo integral da empresa`} />
       </Toggle>
     </Card>
   );
@@ -196,7 +195,7 @@ function faixaLabel(i: number) {
 function BlocoIrrf() {
   const cores = ['free', '', '', 'amber', 'red'];
   return (
-    <Card icon="📋" iconClass="ci-red" title={`Tabela IRRF ${TABELAS.anoTabelas}`}>
+    <Card icon="table" tom="red" title={`Tabela IRRF ${TABELAS.anoTabelas}`} badge="3">
       <p style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 10 }}>
         Base de cálculo = remuneração bruta − a maior entre o INSS e o desconto simplificado ({brl(TABELAS.irrfDescontoSimplificado)}). A redução abaixo é apurada sobre a remuneração bruta.
       </p>
@@ -228,7 +227,7 @@ function BlocoIrrf() {
 
 export function InputsColumn(props: Props) {
   return (
-    <div>
+    <div className="col">
       <BlocoRegime {...props} />
       <BlocoEmpregado {...props} />
       <BlocoIrrf />

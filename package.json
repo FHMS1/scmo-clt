@@ -1,7 +1,7 @@
 {
   "name": "scmo-clt",
   "private": true,
-  "version": "5.1.0",
+  "version": "5.2.0",
   "type": "module",
   "description": "Simulador de custo de mão de obra CLT — Simples Nacional e Lucro Presumido",
   "scripts": {

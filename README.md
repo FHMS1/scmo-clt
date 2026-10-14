@@ -1,5 +1,5 @@
 # Simulador de Custo de Mão de Obra CLT
-**v5.1** — React + TypeScript
+**v5.2** — React + TypeScript
 
 Planilha web de demonstração do **custo real de um empregado CLT**, com cálculo em tempo real para **Simples Nacional** e **Lucro Presumido**: custo mensal da empresa, líquido do trabalhador e provisões, com PDF/impressão para entregar ao cliente.
 
@@ -13,7 +13,8 @@ Planilha web de demonstração do **custo real de um empregado CLT**, com cálcu
 - Vale-transporte (desconto de 6%) e vale-alimentação
 - Custo mensal real **separado** das provisões (13º e 1/3 de férias, com FGTS)
 - RAT por CNAE (lista curada) × FAP informado
-- Glossário com base legal · tema claro/escuro
+- Gráfico de composição do custo e comparativo entre os regimes
+- Glossário com base legal · tema claro/escuro (design system próprio)
 - Salvar PDF compacto (A4) e imprimir
 
 ## Rodando

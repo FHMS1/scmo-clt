@@ -5,10 +5,11 @@ Priorização: **P1** próximo ciclo · **P2** depois · **P3** ideia.
 ## Evolução visual (motivo da migração para React)
 | P | Item | Notas |
 |---|---|---|
-| P1 | Componentizar CSS (CSS Modules ou tokens + utilitários) e retirar o `app.css` monolítico | Hoje o CSS é um port 1:1 do legado |
-| P1 | Barra de “composição do custo” (salário vs. encargos vs. benefícios vs. provisões) | Gráfico simples, sem lib pesada; ver skill `dataviz` |
-| P1 | Cartão resumo “De R$ X de salário para R$ Y de custo” (multiplicador) | Mensagem-chave da demonstração |
-| P2 | Comparativo Simples × Presumido lado a lado (spec 02 R2) | Reaproveita `simular()` |
+| ✅ | Design system com tokens claro/escuro, ícones SVG, componentes e motion | v5.2 |
+| ✅ | Barra de composição do custo (paleta validada, legenda com valores) | v5.2 |
+| ✅ | Multiplicador custo ÷ remuneração nos KPIs | v5.2 |
+| ✅ | Comparativo Simples × Anexo IV × Presumido (spec 02 R2) | v5.2 |
+| P2 | Quebrar `app.css` em CSS Modules por componente | Hoje é um arquivo único organizado por seções |
 | P2 | Microinterações: transições de seção ao ligar/desligar regime e toggles | Respeitar reduced-motion |
 | P2 | Densidade responsiva dos cards de resultado em mobile | |
 | P3 | Marca configurável (logo/cor/nome do escritório) no cabeçalho do PDF | |

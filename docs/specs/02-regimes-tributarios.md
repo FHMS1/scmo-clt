@@ -27,7 +27,7 @@ FAP é sempre informado pelo usuário (extrato do CNPJ), limitado a 0,5–2,0.
 | ID | Proposta | Observação |
 |---|---|---|
 | R1 | ✅ **Implementado (v5.1)** — Simples Anexo IV: CPP 20% + RAT fora do DAS | Opção manual no formulário; terceiros assumido zero (A VALIDAR). |
-| R2 | **Comparativo lado a lado** Simples × Presumido na mesma tela | Reaproveita `simular()` chamado duas vezes; sem mudar o domínio. |
+| R2 | ✅ **Implementado (v5.2)** — comparativo lado a lado | `compararRegimes()` em `domain/analise.ts`; mostra os 3 enquadramentos. |
 | R3 | **Desoneração da folha** (CPRB) para CNAEs elegíveis | Substitui 20% patronal por alíquota sobre receita; exige receita bruta. |
 | R4 | **Lucro Real** | Mesmos encargos do Presumido na folha; diferença está no IRPJ/CSLL, fora do escopo de MOD. |
 | R5 | **Terceiros por CNAE** (FPAS) | Hoje fixo em 5,8%; Simples e outros FPAS têm alíquotas distintas. |

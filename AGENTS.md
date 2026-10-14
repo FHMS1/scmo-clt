@@ -49,22 +49,23 @@ Antes de concluir qualquer mudança: `npm run typecheck && npm test && npm run b
     │   ├── cnae.ts           # lista curada CNAE → grau de risco
     │   ├── formulario.ts     # FormState (strings) → EntradaSimulacao
     │   ├── glossario.ts      # termos + base legal
-    │   ├── format.ts         # brl(), regimeLabel()
+    │   ├── analise.ts        # composicaoCusto(), compararRegimes() (gráfico e comparativo)
+    │   ├── format.ts         # brl(), pct(), regimeLabel()
     │   └── simulador.test.ts # casos de aceite da spec 01
     ├── components/           # apresentação
     │   ├── Chrome.tsx        # Header, Hero, Banner, PdfHeader, Footer
     │   ├── InputsColumn.tsx  # Blocos 1–3 (formulário)
-    │   ├── ResultsColumn.tsx # KPIs + cards A/B/C (forwardRef p/ PDF)
+    │   ├── ResultsColumn.tsx # KPIs + composição + cards A/B/C + comparativo (forwardRef p/ PDF)
+    │   ├── Analise.tsx       # ComposicaoCusto (barra empilhada), ComparativoRegimes
     │   ├── Glossario.tsx
-    │   └── ui.tsx            # Card, Linha, Valor
+    │   └── ui.tsx            # Icon (conjunto SVG único), Card, Linha, Valor
     ├── hooks/
     │   ├── useTheme.ts       # data-theme + localStorage
     │   └── useToast.ts
     ├── services/
     │   └── exportar.ts       # imprimir(), salvarPdf() (import dinâmico)
     └── styles/
-        ├── app.css           # tokens + componentes (port do legado)
-        └── react.css         # ajustes da versão React (pdf-header, tabela IRRF…)
+        └── app.css           # design system: tokens claro/escuro, componentes, modo PDF, impressão
 ```
 
 ## Fluxo de dados
@@ -81,7 +82,7 @@ Cálculo **nunca** acontece em componente nem em `useEffect`.
 - **Domínio puro:** `src/domain` não importa React, `window`, `document` nem CSS. Recebe `Tabelas` por parâmetro (default `TABELAS`) para ser testável.
 - **Tabelas:** nenhuma alíquota/faixa literal fora de `tabelas2026.ts` (exceto textos explicativos/glossário).
 - **Dinheiro:** `number` em R$, sem arredondamento intermediário; formatar só na borda com `brl()`.
-- **CSS:** reutilizar tokens `--*` de `app.css`; não hardcodar cores. PDF/print sempre no tema claro.
+- **CSS:** só tokens `--*` de `app.css` (paleta do gráfico: `--series-1..5`, validada com a skill dataviz); sem cores literais. Ícones só via `Icon` (sem emoji). PDF/print sempre no tema claro.
 - **Componentes:** pequenos, props explícitas, sem estado de negócio. Estado de formulário só em `App.tsx`.
 - **Sem dependências novas** sem necessidade clara; `html2pdf.js` deve continuar fora do bundle inicial.
 

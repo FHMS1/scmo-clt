@@ -1,25 +1,35 @@
 import { forwardRef } from 'react';
-import { brl } from '../domain/format';
+import { brl, pct } from '../domain/format';
 import { TABELAS } from '../domain/tabelas2026';
 import type { ResultadoSimulacao } from '../domain/types';
-import { Card, Linha, Valor } from './ui';
+import type { Cenario } from '../domain/analise';
+import { ComparativoRegimes, ComposicaoCusto } from './Analise';
+import { Card, Icon, Linha, Valor, type IconName } from './ui';
 
-const pct = (v: number) => `${(v * 100).toString().replace('.', ',')}%`;
 const H = TABELAS.horasMes;
 
 function Kpis({ r }: { r: ResultadoSimulacao }) {
-  const itens: [string, string, number][] = [
-    ['k-teal', 'Remuneração bruta', r.remuneracaoBruta],
-    ['k-green', 'Líquido em folha', r.liquidoFolha],
-    ['k-amber', 'Custo mensal empresa', r.custoMensal],
-    ['k-red', `Custo/hora (÷ ${H}h)`, r.custoHora],
+  const mult = r.remuneracaoBruta > 0 ? r.custoMensal / r.remuneracaoBruta : 0;
+  const liqPct = r.remuneracaoBruta > 0 ? r.liquidoFolha / r.remuneracaoBruta : 0;
+  const fmt1 = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const itens: { cls: string; icon: IconName; label: string; valor: number; sub: string }[] = [
+    { cls: 'k-teal', icon: 'wallet', label: 'Remuneração bruta', valor: r.remuneracaoBruta, sub: 'Antes dos descontos' },
+    { cls: 'k-green', icon: 'user', label: 'Líquido em folha', valor: r.liquidoFolha,
+      sub: r.remuneracaoBruta > 0 ? `${(liqPct * 100).toFixed(1).replace('.', ',')}% da remuneração bruta` : 'Após INSS, IRRF e VT' },
+    { cls: 'k-amber', icon: 'coins', label: 'Custo mensal da empresa', valor: r.custoMensal,
+      sub: mult > 0 ? `${fmt1(mult)}× a remuneração bruta` : 'Sem provisões' },
+    { cls: 'k-red', icon: 'clock', label: `Custo por hora (÷ ${H}h)`, valor: r.custoHora, sub: 'Sem provisões' },
   ];
   return (
     <div className="kpi-grid">
-      {itens.map(([cls, label, v]) => (
-        <div key={label} className={`kpi ${cls}`}>
-          <div className="kpi-lbl">{label}</div>
-          <div className="kpi-val"><Valor value={v} /></div>
+      {itens.map((k) => (
+        <div key={k.label} className={`kpi ${k.cls}`}>
+          <div className="kpi-top">
+            <span className="kpi-ico"><Icon name={k.icon} /></span>
+            <span className="kpi-lbl">{k.label}</span>
+          </div>
+          <div className="kpi-val"><Valor value={k.valor} /></div>
+          <div className="kpi-sub">{k.sub}</div>
         </div>
       ))}
     </div>
@@ -29,7 +39,7 @@ function Kpis({ r }: { r: ResultadoSimulacao }) {
 function FolhaAPagar({ r }: { r: ResultadoSimulacao }) {
   const presumido = r.regime === 'presumido';
   return (
-    <Card icon="💳" iconClass="ci-teal" title="Custo Mensal Real — Folha a Pagar">
+    <Card icon="wallet" title="Custo mensal real — folha a pagar">
       <div className="slbl">Remuneração</div>
       <Linha label="Salário base" value={r.salarioBase} />
       <Linha label="Adicional de periculosidade" value={r.valorPericulosidade} />
@@ -37,7 +47,7 @@ function FolhaAPagar({ r }: { r: ResultadoSimulacao }) {
       <Linha label="Comissão" value={r.valorComissao} />
       <Linha label="Remuneração bruta" value={r.remuneracaoBruta} destaque />
       <hr className="dv" />
-      <div className="slbl">Encargos Sociais sobre a Folha</div>
+      <div className="slbl">Encargos sociais sobre a folha</div>
       <Linha label={`FGTS (${pct(TABELAS.fgts)})`} value={r.fgts} />
       {r.patronalAplica && (
         <>
@@ -91,7 +101,7 @@ function InfoIrrf({ r }: { r: ResultadoSimulacao }) {
 
 function Trabalhador({ r }: { r: ResultadoSimulacao }) {
   return (
-    <Card icon="👤" iconClass="ci-green" title="O que o Trabalhador Recebe">
+    <Card icon="user" tom="green" title="O que o trabalhador recebe">
       <div className="slbl">Composição da remuneração</div>
       <Linha label="Salário base" value={r.salarioBase} />
       <Linha label="Adicional de periculosidade" value={r.valorPericulosidade} />
@@ -126,9 +136,9 @@ function Trabalhador({ r }: { r: ResultadoSimulacao }) {
 
 function Provisoes({ r }: { r: ResultadoSimulacao }) {
   return (
-    <Card icon="📅" iconClass="ci-amber" title="Provisões — Programação Financeira">
+    <Card icon="calendar" tom="amber" title="Provisões — programação financeira">
       <div className="note-box">
-        ⚠️ Valores <strong>não incluídos</strong> no custo mensal acima. Representam obrigações futuras que devem ser provisionadas mensalmente.
+        Valores <strong>não incluídos</strong> no custo mensal acima. Representam obrigações futuras que devem ser provisionadas mensalmente.
       </div>
       <div className="slbl">Provisões mensais obrigatórias</div>
       <Linha label="Provisão 13º salário (rem. bruta ÷ 12)" value={r.prov13} />
@@ -149,16 +159,27 @@ function Provisoes({ r }: { r: ResultadoSimulacao }) {
 }
 
 /** Coluna de resultados. O ref é usado pelo exportador de PDF. */
-export const ResultsColumn = forwardRef<HTMLDivElement, { resultado: ResultadoSimulacao }>(
-  function ResultsColumn({ resultado: r }, ref) {
+export const ResultsColumn = forwardRef<HTMLDivElement, { resultado: ResultadoSimulacao; cenarios: Cenario[] }>(
+  function ResultsColumn({ resultado: r, cenarios }, ref) {
     return (
-      <div ref={ref}>
+      <div ref={ref} className="col">
+        {r.remuneracaoBruta <= 0 && (
+          <div className="empty-state">
+            <Icon name="form" />
+            <div>
+              <strong>Informe o salário base para começar</strong>
+              <span>Os valores abaixo são recalculados a cada alteração no formulário.</span>
+            </div>
+          </div>
+        )}
         <Kpis r={r} />
+        <ComposicaoCusto r={r} />
         <FolhaAPagar r={r} />
         <Trabalhador r={r} />
         <Provisoes r={r} />
+        <ComparativoRegimes r={r} cenarios={cenarios} />
         <div className="aviso">
-          <span style={{ fontSize: 17, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+          <Icon name="info" />
           <p>
             Esta simulação é <strong>estimativa</strong>. O IRRF pode variar conforme deduções legais (dependentes, pensão,
             previdência privada). Não considera horas extras, faltas, convenção coletiva e outros eventos variáveis da folha de pagamento.

@@ -3,6 +3,7 @@ import { BannerAtualizacao, Footer, Header, Hero, PdfHeader } from './components
 import { Glossario } from './components/Glossario';
 import { InputsColumn } from './components/InputsColumn';
 import { ResultsColumn } from './components/ResultsColumn';
+import { compararRegimes } from './domain/analise';
 import { FORM_INICIAL, formParaEntrada, type FormState } from './domain/formulario';
 import { regimeLabel } from './domain/format';
 import { simular } from './domain/simulador';
@@ -20,6 +21,7 @@ export function App() {
 
   const resultado = useMemo(() => simular(formParaEntrada(form)), [form]);
 
+  const cenarios = useMemo(() => compararRegimes(formParaEntrada(form)), [form]);
   const rotuloRegime = regimeLabel(resultado.regime, resultado.simplesAnexoIV);
 
   const alterar = useCallback(<K extends keyof FormState>(campo: K, valor: FormState[K]) => {
@@ -53,7 +55,7 @@ export function App() {
       <PdfHeader ref={cabecalhoRef} regime={rotuloRegime} />
       <main>
         <InputsColumn form={form} onChange={alterar} resultado={resultado} />
-        <ResultsColumn ref={resultadosRef} resultado={resultado} />
+        <ResultsColumn ref={resultadosRef} resultado={resultado} cenarios={cenarios} />
       </main>
       <Glossario />
       <Footer />

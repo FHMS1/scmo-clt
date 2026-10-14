@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { GLOSSARIO } from '../domain/glossario';
+import { Icon } from './ui';
 
 export function Glossario() {
   const [id, setId] = useState(GLOSSARIO[0].id);
@@ -9,7 +10,7 @@ export function Glossario() {
     <section className="glossario-section">
       <div className="glossario-inner">
         <div className="glos-header">
-          <span className="glos-icon">📖</span>
+          <span className="glos-icon"><Icon name="book" /></span>
           <div>
             <h2>Glossário e Base Legal</h2>
             <p>Entenda o significado de cada termo utilizado nesta simulação e a legislação que o fundamenta</p>

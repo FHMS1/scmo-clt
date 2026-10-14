@@ -1,10 +1,10 @@
 # 03 — Interface
 
-Stack: React 19 + TypeScript + Vite. CSS portado do legado em `src/styles/app.css` (tokens + componentes) e ajustes em `src/styles/react.css`.
+Stack: React 19 + TypeScript + Vite. Design system em `src/styles/app.css` (tokens claro/escuro, componentes, modo PDF, impressão).
 
 ## Layout
 ```
-Header (título · tag do ano)
+Header fixo (título · ano das tabelas)
 Hero (título · ações: Limpar · PDF · Imprimir · Tema)
 [Banner de tabelas desatualizadas — condicional]
 Main — 2 colunas (400px | 1fr); 1 coluna ≤ 940px
@@ -13,10 +13,13 @@ Main — 2 colunas (400px | 1fr); 1 coluna ≤ 940px
  │   Bloco 2 Dados do empregado (toggles: periculosidade, gratificação, comissão, VT, VA)
  │   Bloco 3 Tabela IRRF (derivada de TABELAS)
  └ Resultados
-     KPIs (bruta · líquido · custo mensal · custo/hora)
+     Estado vazio (quando não há salário)
+     KPIs (bruta · líquido · custo mensal · custo/hora) com contexto (% e multiplicador)
+     Composição do custo (barra empilhada + legenda com valores e %)
      Card A Folha a pagar
      Card B O que o trabalhador recebe (+ badge e explicação do IRRF)
      Card C Provisões (+ custo com provisões)
+     Comparativo de regimes (Simples · Anexo IV · Presumido)
      Aviso de estimativa
 Glossário (mestre-detalhe, 14 termos com base legal)
 Footer
@@ -29,7 +32,8 @@ Footer
 | `InputsColumn.tsx` | Blocos 1–3; **sem** regra de cálculo, só formulário |
 | `ResultsColumn.tsx` | KPIs e cards A/B/C; recebe `ResultadoSimulacao` pronto |
 | `Glossario.tsx` | Lista + detalhe a partir de `domain/glossario.ts` |
-| `ui.tsx` | `Card`, `Linha`, `Valor` (pulsa quando o número muda) |
+| `Analise.tsx` | `ComposicaoCusto`, `ComparativoRegimes` (dados de `domain/analise.ts`) |
+| `ui.tsx` | `Icon`, `Card`, `Linha`, `Valor` (pulsa quando o número muda) |
 
 ## Estado
 - Único estado de formulário: `FormState` (strings) em `App.tsx`.
